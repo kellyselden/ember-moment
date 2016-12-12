@@ -1,95 +1,91 @@
-import Ember from 'ember';
 import moment from 'moment';
-import getOwner from 'ember-moment/utils/get-owner';
 import { moduleFor, test } from 'ember-qunit';
 import toNow from 'ember-moment/computeds/to-now';
 import momentComputed from 'ember-moment/computeds/moment';
+import compute from 'ember-macro-test-helpers/compute';
 
 moduleFor('ember-moment@computed:to-now', {
   setup() {
-    this.register('object:empty', Ember.Object.extend({}));
     moment.locale('en');
   }
 });
 
-function createSubject(attrs) {
-  return getOwner(this).resolveRegistration('object:empty').extend(Ember.$.extend(attrs, {
-    container: this.container,
-    registry: this.registry
-  })).create();
-}
-
 test('get', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    date: moment().subtract(1, 'hour'),
-    ago: toNow('date')
+  compute({
+    assert,
+    computed: toNow('date'),
+    properties: {
+      date: moment().subtract(1, 'hour')
+    },
+    strictEqual: 'in an hour'
   });
-
-  assert.equal(subject.get('ago'), 'in an hour');
 });
 
 test('get and set', function(assert) {
   assert.expect(2);
 
-  const subject = createSubject.call(this, {
-    date: moment().subtract(1, 'hour'),
-    ago: toNow('date')
+  let { subject } = compute({
+    assert,
+    computed: toNow('date'),
+    properties: {
+      date: moment().subtract(1, 'hour')
+    },
+    strictEqual: 'in an hour'
   });
 
-  assert.equal(subject.get('ago'), 'in an hour');
   subject.set('date', moment().subtract(2, 'hour'));
-  assert.equal(subject.get('ago'), 'in 2 hours');
+  assert.equal(subject.get('computed'), 'in 2 hours');
 });
 
 test('get literal', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    ago: toNow(moment().subtract(1, 'hour'))
+  compute({
+    assert,
+    computed: toNow(moment().subtract(1, 'hour')),
+    strictEqual: 'in an hour'
   });
-
-  assert.equal(subject.get('ago'), 'in an hour');
 });
 
 test('get literal hide prefix', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    ago: toNow(moment().subtract(1, 'hour'), 'LLLL', true)
+  compute({
+    assert,
+    computed: toNow(moment().subtract(1, 'hour'), 'LLLL', true),
+    strictEqual: 'an hour'
   });
-
-  assert.equal(subject.get('ago'), 'an hour');
 });
 
 
 test('get literal with prefix', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    ago: toNow(moment().subtract(1, 'hour'), 'LLLL', false)
+  compute({
+    assert,
+    computed: toNow(moment().subtract(1, 'hour'), 'LLLL', false),
+    strictEqual: 'in an hour'
   });
-
-  assert.equal(subject.get('ago'), 'in an hour');
 });
 
 test('composition with momentComputed get literal without suffix', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    ago: toNow(momentComputed(moment().subtract(1, 'hour'), 'LLLL'), true)
+  compute({
+    assert,
+    computed: toNow(momentComputed(moment().subtract(1, 'hour'), 'LLLL'), true),
+    strictEqual: 'an hour'
   });
-
-  assert.equal(subject.get('ago'), 'an hour');
 });
 
 test('composition with momentComputed get literal with suffix', function(assert) {
   assert.expect(1);
 
-  const subject = createSubject.call(this, {
-    ago: toNow(momentComputed(moment().subtract(1, 'hour'), 'LLLL'), false)
+  compute({
+    assert,
+    computed: toNow(momentComputed(moment().subtract(1, 'hour'), 'LLLL'), false),
+    strictEqual: 'in an hour'
   });
-
-  assert.equal(subject.get('ago'), 'in an hour');
 });
